@@ -956,12 +956,12 @@ code {
       <div class="terminal">
         <div class="label">Terminal 1 - truth twin and RViz</div>
 <pre><code>cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_truth_twin.sh use_rviz:=true</code></pre>
+./mecanumbot_RL/scripts/run_truth_twin.sh use_rviz:=true</code></pre>
       </div>
       <div class="terminal">
         <div class="label">Terminal 2 - keyboard teleop</div>
 <pre><code>cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_sim_teleop.sh</code></pre>
+./mecanumbot_RL/scripts/run_sim_teleop.sh</code></pre>
       </div>
     </div>
     <div class="cards" style="margin-top:16px">
@@ -977,7 +977,7 @@ code {
         <span class="tag">If stale</span>
         <h3>Rebuild first</h3>
         <p>
-          Run `./scripts/rebuild_sim.sh` if generated install files are missing or
+          Run `./mecanumbot_RL/scripts/rebuild_sim.sh` if generated install files are missing or
           stale after message, launch, or package changes.
         </p>
       </article>
@@ -985,7 +985,7 @@ code {
         <span class="tag">Detector mode</span>
         <h3>Use debug mode deliberately</h3>
         <p>
-          Run `./scripts/run_detector_debug.sh` only when testing the real LiDAR
+          Run `./mecanumbot_RL/scripts/run_detector_debug.sh` only when testing the real LiDAR
           detector path and its failure modes.
         </p>
       </article>
@@ -1098,7 +1098,7 @@ code {
       <div class="terminal">
         <div class="label">Run actual BT in truth twin</div>
 <pre><code>cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_sim_behaviour.sh use_rviz:=true</code></pre>
+./mecanumbot_RL/scripts/run_sim_behaviour.sh use_rviz:=true</code></pre>
       </div>
       <div class="status-list">
         <h3>What the shim emulates</h3>
@@ -1325,12 +1325,12 @@ code {
       <div class="two-col">
         <div class="terminal">
           <div class="label">Stable baseline</div>
-<pre><code>./scripts/run_truth_twin.sh use_rviz:=true
-./scripts/run_sim_teleop.sh</code></pre>
+<pre><code>./mecanumbot_RL/scripts/run_truth_twin.sh use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_teleop.sh</code></pre>
         </div>
         <div class="terminal">
           <div class="label">Debug frontier</div>
-<pre><code>./scripts/run_detector_debug.sh \
+<pre><code>./mecanumbot_RL/scripts/run_detector_debug.sh \
   scenario_path:=/home/rehawild/Desktop/mecanumbot/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml</code></pre>
         </div>
       </div>

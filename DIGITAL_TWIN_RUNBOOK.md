@@ -21,14 +21,14 @@ Terminal 1:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_truth_twin.sh use_rviz:=true
+./mecanumbot_RL/scripts/run_truth_twin.sh use_rviz:=true
 ```
 
 Terminal 2:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_sim_teleop.sh
+./mecanumbot_RL/scripts/run_sim_teleop.sh
 ```
 
 Keyboard controls:
@@ -42,7 +42,7 @@ If the install tree is stale or missing, rebuild first:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/rebuild_sim.sh
+./mecanumbot_RL/scripts/rebuild_sim.sh
 ```
 
 ## Full Perception Debug Terminal Lineup
@@ -53,7 +53,7 @@ Terminal 1, launch the sim/perception stack with RViz:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_sim_perception.sh \
+./mecanumbot_RL/scripts/run_sim_perception.sh \
   use_rviz:=true \
   scenario_path:=/home/rehawild/Desktop/mecanumbot/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml
 ```
@@ -62,14 +62,14 @@ Terminal 2, teleoperate the robot:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/run_sim_teleop.sh
+./mecanumbot_RL/scripts/run_sim_teleop.sh
 ```
 
 Terminal 3, source the perception runtime before running debug commands:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-source ./scripts/sim_env.sh
+source ./mecanumbot_RL/scripts/sim_env.sh
 source_perception_runtime
 ```
 
@@ -93,7 +93,7 @@ Optional Terminal 4, record the run for later replay:
 
 ```bash
 cd /home/rehawild/Desktop/mecanumbot
-./scripts/record_sim_perception_bag.sh two_humans_wall_discrimination
+./mecanumbot_RL/scripts/record_sim_perception_bag.sh two_humans_wall_discrimination
 ```
 
 ## Rebuild
@@ -102,7 +102,7 @@ Preferred rebuild:
 
 ```bash
 cd "$WORKSPACE"
-./scripts/rebuild_sim.sh
+./mecanumbot_RL/scripts/rebuild_sim.sh
 ```
 
 This rebuilds the simulation/perception packages needed by the current digital twin:
@@ -133,7 +133,7 @@ Use this first for behavior, teleop, scenarios, and UX. It does not run DR-SPAAM
 
 ```bash
 cd "$WORKSPACE"
-./scripts/run_truth_twin.sh \
+./mecanumbot_RL/scripts/run_truth_twin.sh \
   use_rviz:=true \
   scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml"
 ```
@@ -174,15 +174,15 @@ Run:
 
 ```bash
 cd "$WORKSPACE"
-./scripts/run_sim_behaviour.sh use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_behaviour.sh use_rviz:=true
 ```
 
 Optional condition:
 
 ```bash
-./scripts/run_sim_behaviour.sh condition:=Doglike use_rviz:=true
-./scripts/run_sim_behaviour.sh condition:=Control use_rviz:=true
-./scripts/run_sim_behaviour.sh condition:=LED use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_behaviour.sh condition:=Doglike use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_behaviour.sh condition:=Control use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_behaviour.sh condition:=LED use_rviz:=true
 ```
 
 Default sim behavior config:
@@ -210,7 +210,7 @@ Use this only when testing the real LiDAR detector path. This mode can look wron
 
 ```bash
 cd "$WORKSPACE"
-./scripts/run_detector_debug.sh \
+./mecanumbot_RL/scripts/run_detector_debug.sh \
   scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml"
 ```
 
@@ -239,13 +239,20 @@ The detector-debug stack publishes `/mecanumbot/dr_spaam/dets`, `/mecanumbot/sub
 
 In RViz, `/sim/detector_debug_markers` draws each raw detector output in `map` and connects it to the nearest truth actor. Use those lines and distance labels to debug scan/detector alignment. Do not use this as the primary behavior UX until detector/frame alignment is verified.
 
+Detector profiles are separated by launch parameters:
+
+- Physical robot default: `robot_profile:=physical`, `tracker_mode:=kalman`, `enable_map_filter:=true`.
+- Simulation debug launch: `robot_profile:=sim`, `tracker_mode:=simple`, `enable_map_filter:=false`.
+
+The topic/frame compatibility fixes are shared by both paths: `scan_topic`, `detections_topic`, `rviz_topic`, and header-based detection frame handling stay configurable. Behavior-changing detector logic should be changed through these parameters, not by silently replacing physical defaults.
+
 ## Source Runtime In New Terminals
 
 In every new terminal used for `ros2 topic ...` commands:
 
 ```bash
 cd "$WORKSPACE"
-source "$WORKSPACE/scripts/sim_env.sh"
+source "$WORKSPACE/mecanumbot_RL/scripts/sim_env.sh"
 source_perception_runtime
 ```
 
@@ -259,7 +266,7 @@ To save a detector-debug run, launch the sim/perception stack first, then open a
 
 ```bash
 cd "$WORKSPACE"
-./scripts/record_sim_perception_bag.sh two_humans_wall_discrimination
+./mecanumbot_RL/scripts/record_sim_perception_bag.sh two_humans_wall_discrimination
 ```
 
 Bags are stored under:
@@ -361,7 +368,7 @@ Behavior safety scenarios:
 Run any scenario with:
 
 ```bash
-./scripts/run_sim_perception.sh \
+./mecanumbot_RL/scripts/run_sim_perception.sh \
   use_rviz:=true \
   scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/<scenario_name>.yaml"
 ```
@@ -489,7 +496,7 @@ Teleop is supported. Start the sim/perception stack first, then in another termi
 
 ```bash
 cd "$WORKSPACE"
-./scripts/run_sim_teleop.sh
+./mecanumbot_RL/scripts/run_sim_teleop.sh
 ```
 
 Keyboard mapping:
@@ -511,14 +518,14 @@ Notes:
 The easiest RViz path is to launch it together with perception:
 
 ```bash
-./scripts/run_sim_perception.sh use_rviz:=true
+./mecanumbot_RL/scripts/run_sim_perception.sh use_rviz:=true
 ```
 
 If launching RViz separately:
 
 ```bash
 cd "$WORKSPACE"
-./scripts/run_sim_rviz.sh
+./mecanumbot_RL/scripts/run_sim_rviz.sh
 ros2 param set /rviz2 use_sim_time true
 ```
 
@@ -550,13 +557,13 @@ ros2 topic echo /sim/evaluation_markers --once
 Oracle mode bypasses the detector and publishes ground truth subject pose to `/mecanumbot/subject_pose`.
 
 ```bash
-./scripts/run_sim.sh subject_source:=oracle
+./mecanumbot_RL/scripts/run_sim.sh subject_source:=oracle
 ```
 
 Alternate oracle scenario:
 
 ```bash
-./scripts/run_sim.sh \
+./mecanumbot_RL/scripts/run_sim.sh \
   subject_source:=oracle \
   scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/human_near_wall.yaml"
 ```
