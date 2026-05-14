@@ -1,0 +1,9 @@
+# Generated ROS bag recordings are local evidence artifacts.
+# They are often larger than GitHub's 100 MB file limit.
+perception_runs/
+*.db3
+*.mcap
+
+# Local Python/cache artifacts.
+__pycache__/
+*.py[cod]

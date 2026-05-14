@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mecanumbot Digital Twin - Simulation Overview</title>
+<style>
+:root {
+  --ink: #13211b;
+  --muted: #5d6c62;
+  --line: rgba(19, 33, 27, 0.16);
+  --paper: #f4efe3;
+  --paper-2: #ebe1cc;
+  --forest: #123b2a;
+  --moss: #557a46;
+  --lime: #c8d969;
+  --amber: #d4913c;
+  --rust: #a74935;
+  --blue: #315f7a;
+  --white: #fffaf0;
+  --shadow: 0 24px 70px rgba(18, 59, 42, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+  background:
+    radial-gradient(circle at 10% 5%, rgba(200, 217, 105, 0.30), transparent 28rem),
+    radial-gradient(circle at 90% 0%, rgba(49, 95, 122, 0.18), transparent 30rem),
+    linear-gradient(135deg, #f7f1e4, #e8dcc4 58%, #d7c6a7);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(rgba(19, 33, 27, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 33, 27, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+
+a {
+  color: inherit;
+}
+
+.shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.hero {
+  min-height: 92vh;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 42px;
+  align-items: center;
+  padding: 56px 0 38px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  color: var(--forest);
+  font: 800 12px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 42px;
+  height: 2px;
+  background: var(--forest);
+}
+
+h1, h2, h3 {
+  margin: 0;
+  color: var(--forest);
+  line-height: 1.02;
+}
+
+h1 {
+  max-width: 720px;
+  font-size: clamp(54px, 8.2vw, 112px);
+  letter-spacing: -0.07em;
+}
+
+.hero-copy {
+  max-width: 650px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: clamp(18px, 2.1vw, 25px);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid var(--forest);
+  border-radius: 999px;
+  text-decoration: none;
+  font: 800 13px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.button.primary {
+  color: var(--white);
+  background: var(--forest);
+}
+
+.hero-panel {
+  position: relative;
+  min-height: 520px;
+  border: 1px solid rgba(18, 59, 42, 0.20);
+  border-radius: 38px;
+  padding: 26px;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, rgba(255, 250, 240, 0.84), rgba(235, 225, 204, 0.64)),
+    radial-gradient(circle at 50% 20%, rgba(200, 217, 105, 0.28), transparent 18rem);
+  box-shadow: var(--shadow);
+}
+
+.orbit {
+  position: absolute;
+  border: 1px dashed rgba(18, 59, 42, 0.22);
+  border-radius: 50%;
+}
+
+.orbit.one {
+  width: 430px;
+  height: 430px;
+  right: -105px;
+  top: 30px;
+}
+
+.orbit.two {
+  width: 280px;
+  height: 280px;
+  right: 20px;
+  top: 105px;
+}
+
+.robot-card {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  right: 30px;
+  padding: 22px;
+  border: 1px solid rgba(18, 59, 42, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.robot-visual {
+  position: absolute;
+  top: 72px;
+  left: 52px;
+  width: 310px;
+  height: 245px;
+}
+
+.lidar-rays line {
+  stroke: rgba(49, 95, 122, 0.35);
+  stroke-width: 1.4;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mini-stat {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(18, 59, 42, 0.06);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.mini-stat strong {
+  display: block;
+  color: var(--forest);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mini-stat span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-bottom: 44px;
+  border-block: 1px solid rgba(18, 59, 42, 0.18);
+  background: rgba(244, 239, 227, 0.82);
+  backdrop-filter: blur(18px);
+}
+
+.nav-inner {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.nav a {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font: 800 12px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.nav a:hover {
+  color: var(--white);
+  background: var(--forest);
+}
+
+section {
+  padding: 56px 0;
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: 0.45fr 1fr;
+  gap: 32px;
+  align-items: end;
+  margin-bottom: 26px;
+}
+
+.section-kicker {
+  color: var(--amber);
+  font: 900 13px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: clamp(34px, 5vw, 64px);
+  letter-spacing: -0.055em;
+}
+
+.lead {
+  max-width: 790px;
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  min-height: 210px;
+  padding: 22px;
+  border: 1px solid rgba(18, 59, 42, 0.16);
+  border-radius: 28px;
+  background: rgba(255, 250, 240, 0.62);
+  box-shadow: 0 12px 40px rgba(18, 59, 42, 0.08);
+}
+
+.card.dark {
+  color: var(--white);
+  background: linear-gradient(145deg, var(--forest), #1c593e);
+}
+
+.card.dark h3,
+.card.dark .tag {
+  color: var(--white);
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 28px;
+  letter-spacing: -0.035em;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card.dark p {
+  color: rgba(255, 250, 240, 0.76);
+}
+
+.tag {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--moss);
+  font: 900 11px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.timeline {
+  display: grid;
+  gap: 14px;
+}
+
+.phase {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid rgba(18, 59, 42, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.58);
+}
+
+.phase-num {
+  color: var(--amber);
+  font: 950 42px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.08em;
+}
+
+.phase h3 {
+  margin-bottom: 6px;
+}
+
+.diagram {
+  padding: 20px;
+  border-radius: 32px;
+  background: rgba(255, 250, 240, 0.66);
+  border: 1px solid rgba(18, 59, 42, 0.16);
+  overflow-x: auto;
+}
+
+.diagram svg {
+  min-width: 880px;
+  display: block;
+}
+
+.flow-box {
+  fill: rgba(255, 250, 240, 0.95);
+  stroke: rgba(18, 59, 42, 0.28);
+  stroke-width: 1.5;
+}
+
+.flow-box.dark {
+  fill: #123b2a;
+}
+
+.flow-title {
+  fill: var(--forest);
+  font: 800 15px ui-sans-serif, system-ui, sans-serif;
+}
+
+.flow-title.light {
+  fill: var(--white);
+}
+
+.flow-sub {
+  fill: var(--muted);
+  font: 12px ui-sans-serif, system-ui, sans-serif;
+}
+
+.flow-sub.light {
+  fill: rgba(255, 250, 240, 0.72);
+}
+
+.arrow {
+  stroke: var(--moss);
+  stroke-width: 2;
+  fill: none;
+  marker-end: url(#arrow);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.terminal {
+  padding: 18px;
+  border-radius: 24px;
+  color: #dbe8d8;
+  background: #13211b;
+  box-shadow: inset 0 0 0 1px rgba(255, 250, 240, 0.08);
+}
+
+.terminal .label {
+  margin-bottom: 12px;
+  color: var(--lime);
+  font: 900 11px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+pre {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  font: 13px/1.6 "Cascadia Code", Consolas, monospace;
+}
+
+code {
+  padding: 2px 6px;
+  border-radius: 7px;
+  background: rgba(18, 59, 42, 0.08);
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.terminal code {
+  padding: 0;
+  background: transparent;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.scenario {
+  min-height: 160px;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.58);
+  border: 1px solid rgba(18, 59, 42, 0.14);
+}
+
+.scenario .type {
+  color: var(--blue);
+  font: 900 11px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scenario h3 {
+  margin: 10px 0 8px;
+  font-size: 21px;
+}
+
+.scenario p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.status-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.status-list {
+  padding: 20px;
+  border-radius: 28px;
+  background: rgba(255, 250, 240, 0.58);
+  border: 1px solid rgba(18, 59, 42, 0.14);
+}
+
+.status-list h3 {
+  margin-bottom: 14px;
+}
+
+.status-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-list li {
+  padding: 11px 0;
+  border-top: 1px solid rgba(18, 59, 42, 0.10);
+}
+
+.status-list li:first-child {
+  border-top: 0;
+}
+
+.status-list strong {
+  display: block;
+  color: var(--forest);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.status-list span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.artifact {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.big-number {
+  display: grid;
+  align-content: center;
+  min-height: 310px;
+  padding: 30px;
+  color: var(--white);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 80% 10%, rgba(200, 217, 105, 0.28), transparent 18rem),
+    linear-gradient(145deg, #123b2a, #234d35);
+}
+
+.big-number strong {
+  display: block;
+  font: 950 clamp(58px, 8vw, 98px)/0.9 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.08em;
+}
+
+.big-number span {
+  max-width: 330px;
+  margin-top: 16px;
+  color: rgba(255, 250, 240, 0.78);
+  font-size: 18px;
+}
+
+.footer {
+  padding: 44px 0 70px;
+  color: rgba(255, 250, 240, 0.78);
+  background: var(--forest);
+}
+
+.footer h2 {
+  color: var(--white);
+}
+
+.footer .lead {
+  color: rgba(255, 250, 240, 0.70);
+}
+
+.footer code {
+  color: var(--lime);
+  background: rgba(255, 250, 240, 0.10);
+}
+
+@media (max-width: 920px) {
+  .hero,
+  .section-head,
+  .two-col,
+  .status-table,
+  .artifact {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+    padding-top: 44px;
+  }
+
+  .hero-panel {
+    min-height: 460px;
+  }
+
+  .cards,
+  .scenario-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .cards,
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .phase {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-panel {
+    min-height: 420px;
+    padding: 18px;
+  }
+
+  .robot-visual {
+    left: 18px;
+    width: 270px;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero shell" id="top">
+    <div>
+      <div class="eyebrow">Mecanumbot simulation recap</div>
+      <h1>Digital twin, perception testbed, and safety evaluator.</h1>
+      <p class="hero-copy">
+        We built a ROS 2 Humble plus MuJoCo simulation stack that can run the robot,
+        fake the real sensors, replay human and wall scenarios, test DR-SPAAM, visualize
+        everything in RViz, and check whether motion is safe.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="#quickstart">Run it</a>
+        <a class="button" href="#flow">See the flow</a>
+        <a class="button" href="#next">Next steps</a>
+      </div>
+    </div>
+    <div class="hero-panel" aria-label="Digital twin illustration">
+      <div class="orbit one"></div>
+      <div class="orbit two"></div>
+      <svg class="robot-visual" viewBox="0 0 320 250" role="img" aria-label="Robot with lidar rays and scenario actors">
+        <g class="lidar-rays">
+          <line x1="92" y1="118" x2="248" y2="38"></line>
+          <line x1="92" y1="118" x2="275" y2="82"></line>
+          <line x1="92" y1="118" x2="274" y2="150"></line>
+          <line x1="92" y1="118" x2="230" y2="205"></line>
+          <line x1="92" y1="118" x2="40" y2="32"></line>
+          <line x1="92" y1="118" x2="26" y2="198"></line>
+        </g>
+        <rect x="43" y="74" width="98" height="88" rx="22" fill="#123b2a"></rect>
+        <circle cx="63" cy="73" r="16" fill="#315f7a"></circle>
+        <circle cx="122" cy="73" r="16" fill="#315f7a"></circle>
+        <circle cx="63" cy="163" r="16" fill="#315f7a"></circle>
+        <circle cx="122" cy="163" r="16" fill="#315f7a"></circle>
+        <circle cx="92" cy="118" r="18" fill="#c8d969"></circle>
+        <circle cx="254" cy="36" r="18" fill="#d4913c"></circle>
+        <circle cx="278" cy="84" r="13" fill="#a74935"></circle>
+        <rect x="252" y="138" width="52" height="15" rx="7" fill="#557a46"></rect>
+        <rect x="210" y="197" width="58" height="15" rx="7" fill="#557a46"></rect>
+        <text x="92" y="214" text-anchor="middle" fill="#123b2a" font-family="system-ui" font-weight="800" font-size="13">MuJoCo robot</text>
+        <text x="254" y="16" text-anchor="middle" fill="#123b2a" font-family="system-ui" font-weight="800" font-size="12">subject</text>
+      </svg>
+      <div class="robot-card">
+        <span class="tag">Current capability</span>
+        <h3>One workspace, two useful modes.</h3>
+        <div class="status-grid">
+          <div class="mini-stat"><strong>Truth</strong><span>Stable UX</span></div>
+          <div class="mini-stat"><strong>Debug</strong><span>DR-SPAAM path</span></div>
+          <div class="mini-stat"><strong>Teleop</strong><span>/cmd_vel live</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <div class="shell nav-inner">
+      <a href="#built">Built</a>
+      <a href="#real-stack">Real stack</a>
+      <a href="#flow">Flow</a>
+      <a href="#quickstart">Run</a>
+      <a href="#debug-view">Debug view</a>
+      <a href="#behaviour">Behavior</a>
+      <a href="#scenarios">Scenarios</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#artifacts">Artifacts</a>
+      <a href="#next">Next</a>
+    </div>
+  </nav>
+
+  <section class="shell" id="built">
+    <div class="section-head">
+      <div class="section-kicker">What exists now</div>
+      <div>
+        <h2>The simulation became a real test rig.</h2>
+        <p class="lead">
+          It is not just a MuJoCo viewer. It is a ROS-facing digital twin with the same
+          topics that the rest of the robot stack expects.
+        </p>
+      </div>
+    </div>
+    <div class="cards">
+      <article class="card dark">
+        <span class="tag">Sim bridge</span>
+        <h3>MuJoCo drives ROS topics</h3>
+        <p>
+          `mecanumbot_sim_io_node` runs physics, publishes `/clock`, fake OpenCR state,
+          odom, IMU, joint states, LiDAR scans, and scenario actor truth.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Robot shell</span>
+        <h3>RViz sees the robot</h3>
+        <p>
+          The URDF, meshes, robot state publisher, TF, scan, odom, and marker topics
+          make the simulated robot inspectable like the real one.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Human world</span>
+        <h3>Actors and scenarios</h3>
+        <p>
+          YAML scenarios define subject humans, distractor humans, wall panels, and
+          moving patrol paths for controlled perception tests.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Detector path</span>
+        <h3>DR-SPAAM in the loop</h3>
+        <p>
+          The real LiDAR person detector subscribes to simulated `/mecanumbot/scan`
+          and publishes raw detections plus selected subject pose.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Safety layer</span>
+        <h3>Evaluators explain failures</h3>
+        <p>
+          Detection and behavior evaluators compare perception, commands, robot pose,
+          and ground truth to publish human-readable safety status.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Operator input</span>
+        <h3>Keyboard teleop works</h3>
+        <p>
+          The teleop package publishes `/cmd_vel`, so manual driving exercises the
+          same command stream watched by the behavior safety evaluator.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="real-stack">
+    <div class="section-head">
+      <div class="section-kicker">Real robot reuse</div>
+      <div>
+        <h2>We kept the real ROS contracts.</h2>
+        <p class="lead">
+          The twin is not a separate toy interface. It swaps the hardware layer for
+          MuJoCo, but keeps the command, perception, TF, and visualization topics that
+          the real robot stack already uses.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="status-list">
+        <h3>Shared with the actual robot</h3>
+        <ul>
+          <li><strong>/cmd_vel</strong><span>Teleop, behavior, and navigation-style velocity commands use the same command topic.</span></li>
+          <li><strong>mecanumbot_teleop</strong><span>The keyboard teleop package publishes the same `geometry_msgs/Twist` commands.</span></li>
+          <li><strong>mecanumbot_sensorproc_node</strong><span>The ROS-side odom and state processing path is reused around simulated OpenCR-style state.</span></li>
+          <li><strong>mecanumbot_lidar_detect_people</strong><span>Detector-debug mode runs the real DR-SPAAM LiDAR person detector.</span></li>
+          <li><strong>robot_state_publisher, URDF, TF, RViz</strong><span>The robot model and visualization pipeline stay the same.</span></li>
+          <li><strong>/mecanumbot/subject_pose, /mecanumbot/odom, /mecanumbot/scan</strong><span>Behavior-facing topics look like normal robot topics.</span></li>
+        </ul>
+      </div>
+      <div class="status-list">
+        <h3>Simulated or replaced</h3>
+        <ul>
+          <li><strong>mecanumbot_IO_node</strong><span>The real serial/OpenCR hardware node is replaced by `mecanumbot_sim_io_node`.</span></li>
+          <li><strong>OpenCR and motors</strong><span>Physical motor commands and encoder feedback are replaced by MuJoCo physics and simulated state.</span></li>
+          <li><strong>LD08 LiDAR hardware</strong><span>The real scanner is replaced by simulated `/mecanumbot/scan` from the MuJoCo world.</span></li>
+          <li><strong>Humans and walls</strong><span>Real-world people and obstacles are replaced by scenario actors defined in YAML.</span></li>
+          <li><strong>Oracle truth mode</strong><span>Truth mode bypasses DR-SPAAM and publishes ground-truth `/mecanumbot/subject_pose` for stable behavior testing.</span></li>
+          <li><strong>Hardware timing and contact details</strong><span>Physics and wheel contact are approximate, especially sideways mecanum motion.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:16px">
+      <article class="card dark">
+        <span class="tag">Bottom line</span>
+        <h3>Same interface, fake hardware.</h3>
+        <p>
+          The useful design point is that behavior and perception can be tested against
+          the same ROS topic contracts they use on the robot, while MuJoCo stands in for
+          the base, sensors, humans, and walls.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Stable mode</span>
+        <h3>Truth twin isolates behavior</h3>
+        <p>
+          Oracle subject pose lets us test behavior logic and UX without detector noise.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Debug mode</span>
+        <h3>Detector mode exposes perception</h3>
+        <p>
+          DR-SPAAM receives simulated scans, so wrong-human, wall-lock, stale-detection,
+          and high-error cases become repeatable.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="timeline">
+    <div class="section-head">
+      <div class="section-kicker">Build story</div>
+      <div>
+        <h2>Phases 1 through 4 are in place.</h2>
+        <p class="lead">
+          The work progressed from basic robot simulation to scenario-based perception
+          and behavior safety checks.
+        </p>
+      </div>
+    </div>
+    <div class="timeline">
+      <article class="phase">
+        <div class="phase-num">01</div>
+        <div>
+          <h3>ROS-visible MuJoCo robot</h3>
+          <p>
+            Built the simulation I/O node so the physics model behaves like the
+            real base from ROS' point of view: `/cmd_vel` in, odom, state, scan,
+            and TF-compatible data out.
+          </p>
+        </div>
+      </article>
+      <article class="phase">
+        <div class="phase-num">02</div>
+        <div>
+          <h3>Scenario actors</h3>
+          <p>
+            Added scenario YAMLs and actor runtime support so we can place humans,
+            walls, and moving distractors in repeatable test scenes.
+          </p>
+        </div>
+      </article>
+      <article class="phase">
+        <div class="phase-num">03</div>
+        <div>
+          <h3>Detector evaluation</h3>
+          <p>
+            Connected simulated LiDAR to DR-SPAAM and added evaluator outputs for
+            subject tracking, wall lock, wrong-human lock, stale detections, and high
+            subject error.
+          </p>
+        </div>
+      </article>
+      <article class="phase">
+        <div class="phase-num">04</div>
+        <div>
+          <h3>Behavior safety evaluation</h3>
+          <p>
+            Added `/sim/behavior_evaluation` so motion can be judged against perception
+            validity and ground-truth distances to humans and walls.
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="flow">
+    <div class="section-head">
+      <div class="section-kicker">Data flow</div>
+      <div>
+        <h2>The twin speaks normal ROS.</h2>
+        <p class="lead">
+          The important design choice was to keep the external interfaces familiar:
+          teleop and behavior publish `/cmd_vel`; perception reads LaserScan; RViz
+          reads TF, odom, robot state, and markers.
+        </p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 940 430" role="img" aria-label="Digital twin data flow diagram">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#557a46"></path>
+          </marker>
+        </defs>
+        <rect class="flow-box dark" x="36" y="62" width="180" height="82" rx="18"></rect>
+        <text class="flow-title light" x="126" y="95" text-anchor="middle">Teleop / BT</text>
+        <text class="flow-sub light" x="126" y="120" text-anchor="middle">publishes /cmd_vel</text>
+
+        <rect class="flow-box dark" x="330" y="42" width="230" height="122" rx="22"></rect>
+        <text class="flow-title light" x="445" y="84" text-anchor="middle">mecanumbot_sim_io_node</text>
+        <text class="flow-sub light" x="445" y="110" text-anchor="middle">MuJoCo physics bridge</text>
+        <text class="flow-sub light" x="445" y="132" text-anchor="middle">clock, odom, scan, actors</text>
+
+        <rect class="flow-box" x="700" y="34" width="190" height="78" rx="18"></rect>
+        <text class="flow-title" x="795" y="66" text-anchor="middle">DR-SPAAM</text>
+        <text class="flow-sub" x="795" y="90" text-anchor="middle">raw detections</text>
+
+        <rect class="flow-box" x="684" y="160" width="220" height="88" rx="18"></rect>
+        <text class="flow-title" x="794" y="194" text-anchor="middle">Detection evaluator</text>
+        <text class="flow-sub" x="794" y="220" text-anchor="middle">tracks subject vs truth</text>
+
+        <rect class="flow-box" x="358" y="286" width="230" height="90" rx="18"></rect>
+        <text class="flow-title" x="473" y="320" text-anchor="middle">Behavior evaluator</text>
+        <text class="flow-sub" x="473" y="346" text-anchor="middle">checks command safety</text>
+
+        <rect class="flow-box" x="52" y="286" width="210" height="90" rx="18"></rect>
+        <text class="flow-title" x="157" y="320" text-anchor="middle">RViz visualization</text>
+        <text class="flow-sub" x="157" y="346" text-anchor="middle">robot, scan, labels, status</text>
+
+        <path class="arrow" d="M216 103 H318"></path>
+        <path class="arrow" d="M560 82 H688"></path>
+        <path class="arrow" d="M795 112 V148"></path>
+        <path class="arrow" d="M684 205 H600 C540 205 520 245 497 280"></path>
+        <path class="arrow" d="M445 164 V270"></path>
+        <path class="arrow" d="M330 126 C250 156 190 220 164 276"></path>
+        <path class="arrow" d="M358 330 H274"></path>
+
+        <text class="flow-sub" x="267" y="92" text-anchor="middle">/cmd_vel</text>
+        <text class="flow-sub" x="625" y="70" text-anchor="middle">/scan</text>
+        <text class="flow-sub" x="628" y="194" text-anchor="middle">/subject_pose</text>
+        <text class="flow-sub" x="350" y="236" text-anchor="middle">/sim/actors + /odom</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="shell" id="quickstart">
+    <div class="section-head">
+      <div class="section-kicker">How to run it</div>
+      <div>
+        <h2>Two commands for the stable demo.</h2>
+        <p class="lead">
+          The recommended demo path is truth twin mode. It uses oracle subject pose,
+          so behavior and UX can be tested without DR-SPAAM noise.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="terminal">
+        <div class="label">Terminal 1 - truth twin and RViz</div>
+<pre><code>cd /home/rehawild/Desktop/mecanumbot
+./scripts/run_truth_twin.sh use_rviz:=true</code></pre>
+      </div>
+      <div class="terminal">
+        <div class="label">Terminal 2 - keyboard teleop</div>
+<pre><code>cd /home/rehawild/Desktop/mecanumbot
+./scripts/run_sim_teleop.sh</code></pre>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:16px">
+      <article class="card">
+        <span class="tag">Controls</span>
+        <h3>Drive manually</h3>
+        <p>
+          `w/x` forward and back, `q/e` rotate, `a/d` strafe, `space` or `s` stop.
+          Sideways motion is limited by the simplified wheel contact model.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">If stale</span>
+        <h3>Rebuild first</h3>
+        <p>
+          Run `./scripts/rebuild_sim.sh` if generated install files are missing or
+          stale after message, launch, or package changes.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Detector mode</span>
+        <h3>Use debug mode deliberately</h3>
+        <p>
+          Run `./scripts/run_detector_debug.sh` only when testing the real LiDAR
+          detector path and its failure modes.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="debug-view">
+    <div class="section-head">
+      <div class="section-kicker">RViz debug view</div>
+      <div>
+        <h2>What the subject, distractor, arrows, and tracks mean.</h2>
+        <p class="lead">
+          The cluttered RViz view is the perception stress test. It is designed to show
+          when the detector confuses the real subject with a distractor human or wall,
+          not to look like a clean demo.
+        </p>
+      </div>
+    </div>
+    <div class="cards">
+      <article class="card dark">
+        <span class="tag">Ground truth</span>
+        <h3>`SUBJECT` is decided by the scenario file</h3>
+        <p>
+          The simulator knows the correct target because the YAML scenario marks one
+          actor with `is_subject: true`. In `two_humans_wall_discrimination`, that is
+          `subject_human`; `distractor_human` is explicitly marked false.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Actor arrows</span>
+        <h3>Green and orange arrows show motion</h3>
+        <p>
+          Arrows coming from `SUBJECT` and `DISTRACTOR` are velocity markers. They show
+          where each simulated human is moving along its patrol path. They are not used
+          to choose the subject.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Detector lines</span>
+        <h3>`D1 -> actor` shows nearest truth</h3>
+        <p>
+          Labels such as `D1 -> distractor_human 0.73m` mean a DR-SPAAM detection was
+          transformed into map frame, then connected to the nearest visible truth actor.
+          This is a debug association, not a command.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Human proxy</span>
+        <h3>The two green leg circles create LiDAR shape</h3>
+        <p>
+          The simplified human has torso and leg geometry. MuJoCo ray-casts the
+          simulated LiDAR against those shapes, so the detector receives human-like scan
+          returns. We do not manually identify the subject by measuring the leg circles.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Tracked pose</span>
+        <h3>`TRACK` is what perception selected</h3>
+        <p>
+          In detector-debug mode, DR-SPAAM publishes tracked detections, and the first
+          tracked detection becomes `/mecanumbot/subject_pose`. The evaluator then checks
+          whether that selected pose is actually close to the scenario subject.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Safety result</span>
+        <h3>`safe_idle_invalid_target` is a good failure</h3>
+        <p>
+          If perception is wrong or uncertain but the robot is stopped, the behavior
+          evaluator reports `safe_idle_invalid_target`. That means the robot is not
+          moving toward an unreliable target.
+        </p>
+      </article>
+    </div>
+    <div class="status-table" style="margin-top:16px">
+      <div class="status-list">
+        <h3>Truth-twin mode</h3>
+        <ul>
+          <li><strong>Purpose</strong><span>Stable demo and behavior testing.</span></li>
+          <li><strong>Subject source</strong><span>`/sim/subject_pose_ground_truth` is bridged directly to `/mecanumbot/subject_pose`.</span></li>
+          <li><strong>What it proves</strong><span>The robot interface, teleop, behavior logic, RViz, and safety evaluator work without detector noise.</span></li>
+          <li><strong>Limitation</strong><span>It bypasses the hard perception problem, so it does not prove DR-SPAAM can identify the right person.</span></li>
+        </ul>
+      </div>
+      <div class="status-list">
+        <h3>Detector-debug mode</h3>
+        <ul>
+          <li><strong>Purpose</strong><span>Stress-test the real LiDAR person detector.</span></li>
+          <li><strong>Subject source</strong><span>DR-SPAAM reads `/mecanumbot/scan`, publishes `/mecanumbot/dr_spaam/dets`, then selects `/mecanumbot/subject_pose`.</span></li>
+          <li><strong>What it proves</strong><span>The sim can expose wrong-human lock, wall lock, stale detection, and high subject error cases.</span></li>
+          <li><strong>Expected hard case</strong><span>If the selected pose is closer to `distractor_human` than `subject_human`, the status becomes `subject_error_high` or `wrong_human_lock`.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell" id="behaviour">
+    <div class="section-head">
+      <div class="section-kicker">Behavior integration</div>
+      <div>
+        <h2>The actual leading BT now has a sim path.</h2>
+        <p class="lead">
+          We added a non-destructive adapter path: the existing behavior tree executable
+          runs unchanged, while a sim-only Nav2/AMCL shim provides the interfaces it
+          normally receives from the real navigation stack.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="terminal">
+        <div class="label">Run actual BT in truth twin</div>
+<pre><code>cd /home/rehawild/Desktop/mecanumbot
+./scripts/run_sim_behaviour.sh use_rviz:=true</code></pre>
+      </div>
+      <div class="status-list">
+        <h3>What the shim emulates</h3>
+        <ul>
+          <li><strong>/amcl_pose</strong><span>Published from simulated odometry in map frame.</span></li>
+          <li><strong>/goal_pose</strong><span>The real BT publishes goals here, as it does for Nav2.</span></li>
+          <li><strong>/navigate_to_pose/_action/status</strong><span>Publishes Nav2-like accepted, executing, and succeeded states.</span></li>
+          <li><strong>/cmd_vel</strong><span>Generated by the shim and consumed by `mecanumbot_sim_io_node`.</span></li>
+          <li><strong>/set_led_status</strong><span>Dummy success service so startup LED calls do not need LED hardware.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:16px">
+      <article class="card dark">
+        <span class="tag">Non-destructive</span>
+        <h3>Real robot files stay untouched.</h3>
+        <p>
+          The new pieces are sim-only: `mecanumbot_sim_nav_shim_node`,
+          `launch_mecanumbot_sim_behaviour.launch.py`, `run_sim_behaviour.sh`, and
+          `sim_behaviour_setting_constants.yaml`.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">First goal</span>
+        <h3>Validate behavior logic</h3>
+        <p>
+          This path tests attention, route selection, checkpoint goals, accessory
+          commands, and `/sim/behavior_evaluation` before introducing full Nav2.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Later goal</span>
+        <h3>Replace shim with Nav2</h3>
+        <p>
+          Once the BT works in truth mode, the shim can be swapped for real Nav2 using
+          sim time, map-frame TF, and simulated scan input.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="scenarios">
+    <div class="section-head">
+      <div class="section-kicker">Scenario suite</div>
+      <div>
+        <h2>Repeatable worlds for specific questions.</h2>
+        <p class="lead">
+          The scenarios are not random demos. Each one targets a perception or behavior
+          failure mode we need to understand before trusting the robot.
+        </p>
+      </div>
+    </div>
+    <div class="scenario-grid">
+      <article class="scenario">
+        <div class="type">Static</div>
+        <h3>single_human_follow</h3>
+        <p>One subject human. Good for the simplest end-to-end smoke test.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Static</div>
+        <h3>human_near_wall</h3>
+        <p>Subject near wall geometry. Useful for separating humans from structure.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Moving</div>
+        <h3>moving_human_patrol</h3>
+        <p>One moving subject. Default perception-motion test scene.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Moving</div>
+        <h3>moving_human_near_wall</h3>
+        <p>Moving subject near a wall panel. Tests tracking under clutter.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Discrimination</div>
+        <h3>human_wall_discrimination</h3>
+        <p>Moving subject plus wall decoys. Detects wall lock behavior.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Discrimination</div>
+        <h3>two_humans_wall_discrimination</h3>
+        <p>Subject, distractor human, and walls. The main hard-case detector debug scene.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Safety</div>
+        <h3>behavior_subject_stop</h3>
+        <p>Subject starts close to robot. Used to verify unsafe close-human motion.</p>
+      </article>
+      <article class="scenario">
+        <div class="type">Safety</div>
+        <h3>behavior_wrong_human_crossing</h3>
+        <p>Subject plus crossing distractor. Used to catch unsafe wrong-target motion.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="evaluation">
+    <div class="section-head">
+      <div class="section-kicker">Evaluation</div>
+      <div>
+        <h2>The sim reports what went wrong.</h2>
+        <p class="lead">
+          The evaluator topics turn raw motion and detector output into concise status
+          messages. This is what makes the twin useful for debugging behavior.
+        </p>
+      </div>
+    </div>
+    <div class="status-table">
+      <div class="status-list">
+        <h3>/sim/detection_evaluation</h3>
+        <ul>
+          <li><strong>tracking_subject</strong><span>Detector pose is closest to the designated subject.</span></li>
+          <li><strong>oracle_tracking_subject</strong><span>Truth twin mode is publishing clean ground-truth subject pose.</span></li>
+          <li><strong>false_wall_lock</strong><span>Detector pose is closest to a wall actor.</span></li>
+          <li><strong>wrong_human_lock</strong><span>Detector pose is closest to a non-subject human.</span></li>
+          <li><strong>subject_error_high</strong><span>Detector exists but is too far from the designated subject.</span></li>
+          <li><strong>pose_memory_only</strong><span>Subject pose exists, but the current raw detector frame is stale.</span></li>
+        </ul>
+      </div>
+      <div class="status-list">
+        <h3>/sim/behavior_evaluation</h3>
+        <ul>
+          <li><strong>safe_idle</strong><span>Robot is stopped.</span></li>
+          <li><strong>safe_idle_invalid_target</strong><span>Target is invalid, but robot is not moving.</span></li>
+          <li><strong>safe_following_subject</strong><span>Robot is moving with a valid target and safe distances.</span></li>
+          <li><strong>unsafe_motion_with_invalid_target</strong><span>Robot is moving while perception is wrong or uncertain.</span></li>
+          <li><strong>unsafe_motion_with_stale_detection</strong><span>Robot is moving without current raw detector output.</span></li>
+          <li><strong>unsafe_close_to_human</strong><span>Robot is moving inside the human stop distance.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell" id="artifacts">
+    <div class="section-head">
+      <div class="section-kicker">Evidence captured</div>
+      <div>
+        <h2>We saved one substantial detector-debug run.</h2>
+        <p class="lead">
+          RViz and MuJoCo are live tools, so the persistent artifact is a ROS 2 bag
+          containing the data needed to replay and inspect a perception run.
+        </p>
+      </div>
+    </div>
+    <div class="artifact">
+      <div class="big-number">
+        <strong>714k</strong>
+        <span>messages recorded in the two-humans wall-discrimination bag.</span>
+      </div>
+      <div class="status-list">
+        <h3>Recorded bag</h3>
+        <p>
+          Path: <code>mecanumbot_RL/perception_runs/20260423_115358_two_humans_wall_discrimination</code>
+        </p>
+        <p>
+          Duration: about 22 minutes. Topics include `/mecanumbot/scan`,
+          `/mecanumbot/dr_spaam/dets`, `/mecanumbot/subject_pose`, `/sim/actors`,
+          `/sim/detection_evaluation`, `/sim/behavior_evaluation`, `/cmd_vel`,
+          `/mecanumbot/odom`, `/tf`, `/tf_static`, and `/clock`.
+        </p>
+        <div class="terminal" style="margin-top:16px">
+          <div class="label">Replay</div>
+<pre><code>ros2 bag play \
+  /home/rehawild/Desktop/mecanumbot/mecanumbot_RL/perception_runs/20260423_115358_two_humans_wall_discrimination \
+  --clock</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell" id="limitations">
+    <div class="section-head">
+      <div class="section-kicker">Limitations</div>
+      <div>
+        <h2>Known boundaries are explicit.</h2>
+        <p class="lead">
+          The twin is useful because it makes these constraints visible instead of
+          hiding them behind a perfect-looking demo.
+        </p>
+      </div>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="tag">Physics</span>
+        <h3>Simplified wheel contact</h3>
+        <p>
+          Forward/back and rotation are the most reliable. Sideways mecanum motion is
+          limited by the simplified MuJoCo contact setup.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Actors</span>
+        <h3>Proxy humans</h3>
+        <p>
+          Human models are simplified collision and visual proxies, not articulated
+          people with full body motion.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Perception</span>
+        <h3>Hard cases can fail</h3>
+        <p>
+          Detector-debug mode uses the real DR-SPAAM path, so wrong-target and
+          `subject_error_high` outputs are expected findings, not sim failures.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="footer" id="next">
+    <div class="shell">
+      <div class="section-head">
+        <div class="section-kicker">Where we left off</div>
+      <div>
+          <h2>Next: test the behavior path under motion.</h2>
+          <p class="lead">
+            The sim-only behavior launch is in place. The practical sequence is now:
+            run the truth twin behavior path, verify goals become `/cmd_vel`, watch
+            `/sim/behavior_evaluation`, then switch from oracle truth to detector-debug
+            scenarios to expose perception-driven behavior failures.
+          </p>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="terminal">
+          <div class="label">Stable baseline</div>
+<pre><code>./scripts/run_truth_twin.sh use_rviz:=true
+./scripts/run_sim_teleop.sh</code></pre>
+        </div>
+        <div class="terminal">
+          <div class="label">Debug frontier</div>
+<pre><code>./scripts/run_detector_debug.sh \
+  scenario_path:=/home/rehawild/Desktop/mecanumbot/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml</code></pre>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+</body>
+</html>

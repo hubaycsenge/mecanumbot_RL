@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SST Env Integration Report - Mecanumbot</title>
+<style>
+:root {
+  --bg: #10130f;
+  --panel: #f2ead7;
+  --panel-2: #e3d5b9;
+  --ink: #1d261f;
+  --muted: #657062;
+  --line: rgba(29, 38, 31, 0.16);
+  --green: #2f6548;
+  --moss: #8ba05d;
+  --gold: #d6a13d;
+  --red: #b34d3d;
+  --blue: #315f7a;
+  --cream: #fff8e8;
+  --code: #172018;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.62;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(214, 161, 61, 0.22), transparent 28rem),
+    radial-gradient(circle at 88% 2%, rgba(49, 95, 122, 0.22), transparent 32rem),
+    linear-gradient(135deg, #f5ead3, #dccaa9 64%, #b9a27a);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(29, 38, 31, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 38, 31, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 82%);
+}
+
+.shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.hero {
+  min-height: 88vh;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 34px;
+  align-items: center;
+  padding: 56px 0 34px;
+}
+
+.eyebrow {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  color: var(--green);
+  line-height: 1.05;
+}
+
+h1 {
+  margin-top: 16px;
+  max-width: 760px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(50px, 7vw, 96px);
+  letter-spacing: -0.06em;
+}
+
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 5vw, 60px);
+  letter-spacing: -0.045em;
+}
+
+h3 {
+  font-size: 23px;
+  letter-spacing: -0.025em;
+}
+
+.lead {
+  max-width: 760px;
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.hero .lead {
+  margin-top: 22px;
+  font-size: clamp(18px, 2.1vw, 24px);
+}
+
+.hero-card {
+  position: relative;
+  min-height: 500px;
+  padding: 26px;
+  border: 1px solid rgba(29, 38, 31, 0.16);
+  border-radius: 36px;
+  background:
+    radial-gradient(circle at 70% 15%, rgba(139, 160, 93, 0.32), transparent 18rem),
+    linear-gradient(150deg, rgba(255, 248, 232, 0.90), rgba(227, 213, 185, 0.74));
+  box-shadow: 0 28px 80px rgba(29, 38, 31, 0.18);
+  overflow: hidden;
+}
+
+.grid-diagram {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.tile {
+  min-height: 92px;
+  padding: 14px;
+  border-radius: 18px;
+  color: var(--cream);
+  background: var(--green);
+}
+
+.tile:nth-child(2) { background: var(--blue); }
+.tile:nth-child(3) { background: var(--gold); color: var(--ink); }
+.tile:nth-child(4) { background: var(--moss); color: var(--ink); }
+.tile:nth-child(5) { background: var(--red); }
+.tile:nth-child(6) { background: #2d3a31; }
+
+.tile strong {
+  display: block;
+  font-size: 14px;
+}
+
+.tile span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.82;
+}
+
+.verdict {
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  bottom: 26px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(255, 248, 232, 0.82);
+  border: 1px solid rgba(29, 38, 31, 0.14);
+}
+
+.verdict .label,
+.section-label,
+.tag {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-top: 1px solid rgba(29, 38, 31, 0.16);
+  border-bottom: 1px solid rgba(29, 38, 31, 0.16);
+  background: rgba(242, 234, 215, 0.86);
+  backdrop-filter: blur(16px);
+}
+
+.nav-inner {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.nav a {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.nav a:hover {
+  color: var(--cream);
+  background: var(--green);
+}
+
+section {
+  padding: 58px 0;
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: 0.35fr 1fr;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card,
+.panel {
+  padding: 22px;
+  border: 1px solid rgba(29, 38, 31, 0.14);
+  border-radius: 28px;
+  background: rgba(255, 248, 232, 0.62);
+  box-shadow: 0 12px 44px rgba(29, 38, 31, 0.08);
+}
+
+.card.dark {
+  color: var(--cream);
+  background: linear-gradient(145deg, var(--green), #214b34);
+}
+
+.card.dark h3,
+.card.dark .tag {
+  color: var(--cream);
+}
+
+.card p,
+.panel p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.card.dark p {
+  color: rgba(255, 248, 232, 0.76);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.table {
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row strong {
+  color: var(--green);
+}
+
+.row span {
+  color: var(--muted);
+}
+
+pre {
+  margin: 0;
+  overflow-x: auto;
+  color: #dbe8d8;
+  background: var(--code);
+  border-radius: 22px;
+  padding: 18px;
+  font: 13px/1.6 "Cascadia Code", Consolas, monospace;
+}
+
+code {
+  padding: 2px 6px;
+  border-radius: 7px;
+  background: rgba(29, 38, 31, 0.08);
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 0.92em;
+}
+
+pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.flow {
+  padding: 20px;
+  border-radius: 32px;
+  background: rgba(255, 248, 232, 0.66);
+  border: 1px solid rgba(29, 38, 31, 0.14);
+  overflow-x: auto;
+}
+
+.flow svg {
+  min-width: 920px;
+  display: block;
+}
+
+.box {
+  fill: rgba(255, 248, 232, 0.95);
+  stroke: rgba(29, 38, 31, 0.25);
+  stroke-width: 1.4;
+}
+
+.box.dark {
+  fill: #2f6548;
+}
+
+.svg-title {
+  fill: var(--green);
+  font: 900 15px ui-sans-serif, system-ui, sans-serif;
+}
+
+.svg-title.light {
+  fill: var(--cream);
+}
+
+.svg-sub {
+  fill: var(--muted);
+  font: 12px ui-sans-serif, system-ui, sans-serif;
+}
+
+.svg-sub.light {
+  fill: rgba(255, 248, 232, 0.75);
+}
+
+.arrow {
+  stroke: var(--green);
+  stroke-width: 2;
+  fill: none;
+  marker-end: url(#arrow);
+}
+
+.risk {
+  border-left: 5px solid var(--red);
+}
+
+.ok {
+  border-left: 5px solid var(--green);
+}
+
+.phase {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 20px;
+  border: 1px solid rgba(29, 38, 31, 0.14);
+  border-radius: 28px;
+  background: rgba(255, 248, 232, 0.62);
+}
+
+.phase-num {
+  color: var(--gold);
+  font-size: 44px;
+  font-weight: 950;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+}
+
+.footer {
+  padding: 48px 0 70px;
+  color: rgba(255, 248, 232, 0.78);
+  background: var(--bg);
+}
+
+.footer h2 {
+  color: var(--cream);
+}
+
+.footer .lead {
+  color: rgba(255, 248, 232, 0.72);
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .section-head,
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .row,
+  .phase {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card {
+    min-height: 640px;
+  }
+}
+</style>
+</head>
+<body>
+<header class="hero shell" id="top">
+  <div>
+    <div class="eyebrow">Integration report</div>
+    <h1>Using `sst-env` as a dog-like behavior engine for Mecanumbot.</h1>
+    <p class="lead">
+      `sst-env-main` is a Gymnasium simulation of the Strange Situation Test. It turns
+      ethological dog-behavior scoring criteria into reward functions and trains
+      policies that produce attachment, acceptance, and anxiety-like behavior patterns.
+    </p>
+  </div>
+  <aside class="hero-card">
+    <div class="eyebrow">Repository summary</div>
+    <h3>Domonkos Nagy / `bozo22`</h3>
+    <p>
+      The repo is not a ROS package. It is a compact RL environment with pretrained
+      PPO models and explicit ethological criteria.
+    </p>
+    <div class="grid-diagram">
+      <div class="tile"><strong>Gym env</strong><span>`SST-v0`</span></div>
+      <div class="tile"><strong>Inputs</strong><span>owner, stranger, dog, toy, door</span></div>
+      <div class="tile"><strong>Actions</strong><span>6 social actions</span></div>
+      <div class="tile"><strong>Criteria</strong><span>29 scoring classes</span></div>
+      <div class="tile"><strong>Traits</strong><span>attachment, acceptance, anxiety</span></div>
+      <div class="tile"><strong>Models</strong><span>4 PPO policies</span></div>
+    </div>
+    <div class="verdict">
+      <div class="label">Recommendation</div>
+      <h3>Use it as a social selector first.</h3>
+      <p>
+        Do not replace Nav2 or our execution BT. Wrap SST as a high-level decision
+        layer that chooses among our existing robot-safe behaviors.
+      </p>
+    </div>
+  </aside>
+</header>
+
+<nav class="nav">
+  <div class="shell nav-inner">
+    <a href="#what">What It Is</a>
+    <a href="#code">Code</a>
+    <a href="#mapping">Mapping</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#phases">Plan</a>
+    <a href="#risks">Risks</a>
+    <a href="#verdict">Verdict</a>
+  </div>
+</nav>
+
+<main>
+  <section class="shell" id="what">
+    <div class="section-head">
+      <div class="section-label">What it is</div>
+      <div>
+        <h2>An ethology-driven RL environment, not a robot controller.</h2>
+        <p class="lead">
+          The SST repo models a dog, owner, stranger, toy, and door in a 2D room.
+          Its value for us is not low-level movement. Its value is the encoded
+          social behavior logic and the trained policies over that logic.
+        </p>
+      </div>
+    </div>
+    <div class="cards">
+      <article class="card dark">
+        <span class="tag">Core task</span>
+        <h3>Strange Situation Test</h3>
+        <p>
+          It simulates owner/stranger episodes and rewards dog-like responses such as
+          proximity seeking, greeting, avoidance, contact, play, passive behavior, and
+          door-oriented anxiety.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Policy</span>
+        <h3>PPO-trained actions</h3>
+        <p>
+          Pretrained models exist for `attachment`, `acceptance`, `anxiety`, and
+          `mixed`. Each predicts one of six discrete social actions from a 17-value
+          observation vector.
+        </p>
+      </article>
+      <article class="card">
+        <span class="tag">Not included</span>
+        <h3>No ROS or Nav2</h3>
+        <p>
+          It does not publish `/cmd_vel`, `/goal_pose`, `/mecanumbot/subject_pose`,
+          or safety evaluation. Those still need to remain in our Mecanumbot stack.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="code">
+    <div class="section-head">
+      <div class="section-label">Files that matter</div>
+      <div>
+        <h2>The reusable knowledge is concentrated in four files.</h2>
+        <p class="lead">
+          We should treat `sst-env-main` as a reference model and source of social
+          behavior rules before importing any dependency into ROS.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="table">
+          <div class="row"><strong>`sst_env/sst_env.py`</strong><span>Defines the Gymnasium `SSTEnv`, observation vector, discrete actions, reward calculation, stepping, and rendering.</span></div>
+          <div class="row"><strong>`sst_env/criteria.py`</strong><span>Defines the ethologist scoring criteria. This is the most reusable part for our evaluator.</span></div>
+          <div class="row"><strong>`sst_env/protocol.py`</strong><span>Defines owner and stranger schedules across 6 episodes and 4 phases each.</span></div>
+          <div class="row"><strong>`sst_env/utils.py`</strong><span>Defines `Action`, `HumanState`, and `CriterionType` enums.</span></div>
+          <div class="row"><strong>`models/*.zip`</strong><span>Pretrained Stable Baselines3 PPO policies for different dog-like behavior profiles.</span></div>
+        </div>
+      </div>
+      <pre><code>Action.PLAY = 0
+Action.EXPLORE = 1
+Action.PASSIVE = 2
+Action.CONTACT_OWNER = 3
+Action.CONTACT_STRANGER = 4
+Action.CONTACT_DOOR = 5
+
+CriterionType.ATTACHMENT
+CriterionType.ACCEPTANCE
+CriterionType.ANXIETY</code></pre>
+    </div>
+  </section>
+
+  <section class="shell" id="mapping">
+    <div class="section-head">
+      <div class="section-label">Robot mapping</div>
+      <div>
+        <h2>Map SST actions onto existing BT skills.</h2>
+        <p class="lead">
+          SST actions are social intents. Our behavior tree and sim stack should remain
+          responsible for executing those intents safely through Nav2, `/cmd_vel`,
+          gestures, LEDs, and safety checks.
+        </p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="table">
+        <div class="row"><strong>`CONTACT_OWNER`</strong><span>Approach or face the detected subject. In our system: `ApproachSubject`, `TurnTowardSubject`, maybe low-intensity attention cue.</span></div>
+        <div class="row"><strong>`CONTACT_DOOR`</strong><span>Lead toward the target or checkpoint. In our system: select next checkpoint, publish `/goal_pose`, monitor status.</span></div>
+        <div class="row"><strong>`PLAY`</strong><span>Use dog-like gestures or LED/neck/gripper attention behavior. In our system: `DogBehaviourSequence` or `LEDBehaviourSequence`.</span></div>
+        <div class="row"><strong>`PASSIVE`</strong><span>Hold position, stop, or wait for subject state to clarify. In our system: zero `/cmd_vel`, no new Nav goal.</span></div>
+        <div class="row"><strong>`EXPLORE`</strong><span>Scan/reposition/search behavior. In our system: rotate in place, look around, or move to a safe observation point.</span></div>
+        <div class="row"><strong>`CONTACT_STRANGER`</strong><span>In SST this means approach stranger. In Mecanumbot guide mode this is usually a risk signal: avoid, mark wrong-target, or use detector-debug to test distractor handling.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell" id="architecture">
+    <div class="section-head">
+      <div class="section-label">Architecture</div>
+      <div>
+        <h2>Keep BT as execution, add SST as decision.</h2>
+        <p class="lead">
+          The safest architecture is a layered system. SST chooses the social intent;
+          the existing BT executes it through known ROS interfaces; our sim safety
+          evaluator checks whether the result is acceptable.
+        </p>
+      </div>
+    </div>
+    <div class="flow">
+      <svg viewBox="0 0 960 420" role="img" aria-label="SST integration architecture diagram">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#2f6548"></path>
+          </marker>
+        </defs>
+        <rect class="box" x="40" y="54" width="200" height="86" rx="18"></rect>
+        <text class="svg-title" x="140" y="88" text-anchor="middle">Digital Twin State</text>
+        <text class="svg-sub" x="140" y="112" text-anchor="middle">robot, subject, distractor</text>
+
+        <rect class="box dark" x="370" y="40" width="220" height="116" rx="22"></rect>
+        <text class="svg-title light" x="480" y="80" text-anchor="middle">SST Adapter Node</text>
+        <text class="svg-sub light" x="480" y="106" text-anchor="middle">builds 17-value observation</text>
+        <text class="svg-sub light" x="480" y="128" text-anchor="middle">predicts social action</text>
+
+        <rect class="box" x="720" y="54" width="196" height="86" rx="18"></rect>
+        <text class="svg-title" x="818" y="88" text-anchor="middle">Existing BT</text>
+        <text class="svg-sub" x="818" y="112" text-anchor="middle">execution and sequencing</text>
+
+        <rect class="box" x="240" y="260" width="210" height="86" rx="18"></rect>
+        <text class="svg-title" x="345" y="294" text-anchor="middle">Nav2 / Sim Shim</text>
+        <text class="svg-sub" x="345" y="318" text-anchor="middle">/goal_pose -> /cmd_vel</text>
+
+        <rect class="box" x="540" y="260" width="210" height="86" rx="18"></rect>
+        <text class="svg-title" x="645" y="294" text-anchor="middle">Safety Evaluator</text>
+        <text class="svg-sub" x="645" y="318" text-anchor="middle">/sim/behavior_evaluation</text>
+
+        <path class="arrow" d="M240 98 H356"></path>
+        <path class="arrow" d="M590 98 H706"></path>
+        <path class="arrow" d="M818 140 C815 216 720 256 655 260"></path>
+        <path class="arrow" d="M720 118 C580 190 470 244 390 260"></path>
+        <path class="arrow" d="M450 303 H526"></path>
+        <path class="arrow" d="M645 260 C635 198 565 164 510 156"></path>
+
+        <text class="svg-sub" x="300" y="84" text-anchor="middle">observations</text>
+        <text class="svg-sub" x="654" y="84" text-anchor="middle">intent</text>
+        <text class="svg-sub" x="525" y="238" text-anchor="middle">motion + status</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="shell" id="phases">
+    <div class="section-head">
+      <div class="section-label">Implementation plan</div>
+      <div>
+        <h2>Do this in phases so rollback is easy.</h2>
+        <p class="lead">
+          This keeps the integration non-destructive. Each phase can be added as a new
+          sim-only node or config without changing the robot’s production behavior path.
+        </p>
+      </div>
+    </div>
+    <div class="cards">
+      <article class="phase wide">
+        <div class="phase-num">01</div>
+        <div>
+          <h3>Port SST scoring as a passive evaluator</h3>
+          <p>
+            Add a ROS node that consumes `/sim/actors`, `/mecanumbot/odom`,
+            `/mecanumbot/subject_pose`, and current BT action state. It computes
+            attachment/acceptance/anxiety-style scores but does not control the robot.
+          </p>
+        </div>
+      </article>
+      <article class="phase wide">
+        <div class="phase-num">02</div>
+        <div>
+          <h3>Add an SST social intent topic</h3>
+          <p>
+            Create a node that publishes an abstract intent such as `PLAY`, `PASSIVE`,
+            `CONTACT_OWNER`, or `CONTACT_DOOR`. At first, use rule-based selection so
+            we can debug the mapping before loading PPO.
+          </p>
+        </div>
+      </article>
+      <article class="phase wide">
+        <div class="phase-num">03</div>
+        <div>
+          <h3>Connect intent to BT leaves</h3>
+          <p>
+            Add a sim-only BT branch or adapter leaf that maps SST intent to our
+            existing actions: gesture, wait, approach subject, lead checkpoint, or
+            search. Keep safety evaluation external and active.
+          </p>
+        </div>
+      </article>
+      <article class="phase wide">
+        <div class="phase-num">04</div>
+        <div>
+          <h3>Try the pretrained PPO models</h3>
+          <p>
+            Only after the rule-based adapter works, load `models/mixed.zip` or the
+            trait-specific models. The model should choose intent; it should not send
+            `/cmd_vel` directly.
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="risks">
+    <div class="section-head">
+      <div class="section-label">Risks</div>
+      <div>
+        <h2>There is useful work here, but also mismatch.</h2>
+        <p class="lead">
+          The SST environment is smaller and more abstract than our robot system. The
+          integration needs a translation layer, not direct import as-is.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <article class="panel risk">
+        <h3>Direct replacement risk</h3>
+        <p>
+          Replacing our BT with SST directly would remove Nav2 assumptions, safety
+          checks, hardware constraints, LEDs/accessory sequencing, and ROS topic
+          contracts. That would be high-risk and hard to debug.
+        </p>
+      </article>
+      <article class="panel risk">
+        <h3>Semantic mismatch</h3>
+        <p>
+          SST's `agent` is a dog. Our robot is imitating dog-like guidance behavior for
+          a human. `owner`, `stranger`, `door`, and `toy` need careful mapping to
+          subject, distractor, target, and attention cues.
+        </p>
+      </article>
+      <article class="panel risk">
+        <h3>Dependency mismatch</h3>
+        <p>
+          The repo uses Gymnasium, Pygame, Stable Baselines3, and a Python 3.13 conda
+          environment. ROS Humble normally runs Python 3.10, so we should not blindly
+          mix environments inside our core ROS packages.
+        </p>
+      </article>
+      <article class="panel ok">
+        <h3>Safe reuse path</h3>
+        <p>
+          The criteria and action vocabulary can be ported into a ROS-native adapter.
+          That gives us the ethological structure without destabilizing the robot
+          launch path.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="shell" id="concrete">
+    <div class="section-head">
+      <div class="section-label">Concrete first node</div>
+      <div>
+        <h2>The first useful implementation is passive.</h2>
+        <p class="lead">
+          Before making SST control anything, build a passive evaluator node. It gives
+          us evidence that the mapping makes sense.
+        </p>
+      </div>
+    </div>
+    <div class="two-col">
+      <pre><code># Proposed sim-only node
+sst_social_evaluator_node
+
+Inputs:
+  /sim/actors
+  /mecanumbot/odom
+  /mecanumbot/subject_pose
+  /sim/behavior_evaluation
+
+Outputs:
+  /sim/sst_score
+  /sim/sst_markers
+
+No /cmd_vel.
+No /goal_pose.
+No production launch changes.</code></pre>
+      <div class="panel">
+        <h3>Why passive first?</h3>
+        <p>
+          It lets us compare our current Doglike/Control/LED conditions against the
+          SST criteria. If the score trends are meaningful, then we add a selector. If
+          not, we adjust the mapping without risking robot behavior.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer" id="verdict">
+  <div class="shell">
+    <div class="section-head">
+      <div class="section-label">Final verdict</div>
+      <div>
+        <h2>Use SST as the social brain, not the motor brain.</h2>
+        <p class="lead">
+          The professor’s suggestion is technically reasonable if we integrate it at
+          the right level. SST can choose dog-like social intent and score behavior.
+          Our existing BT/Nav2/sim stack should still execute motion, gestures, topic
+          contracts, and safety constraints.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -11,9 +11,13 @@
     <material name="green" rgba="0.0 0.8 0.0 1"/>
     <material name="orange" rgba="1.0 0.4235 0.0392 1"/>
     <material name="red" rgba="0.8 0.0 0.0 1"/>
+    <material name="axis_x" rgba="0.9 0.2 0.2 1"/>
+    <material name="axis_y" rgba="0.2 0.8 0.2 1"/>
+    <texture name="ground_checker" type="2d" builtin="checker" rgb1="0.82 0.84 0.86" rgb2="0.68 0.70 0.72" width="512" height="512"/>
+    <material name="ground" texture="ground_checker" texrepeat="10 10" reflectance="0.05"/>
 
     <mesh name="base" file="base.stl" scale="0.001 0.001 0.001"/>
-    <mesh name="wheel" file="wheel_orig.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="wheel_visual" file="wheel_orig.stl" scale="0.001 0.001 0.001"/>
     <mesh name="arm_left" file="arm_left.stl" scale="0.001 0.001 0.001"/>
     <mesh name="arm_right" file="arm_right.stl" scale="0.001 0.001 0.001"/>
     <mesh name="head" file="head.stl" scale="0.001 0.001 0.001"/>
@@ -23,70 +27,99 @@
 
   <!-- Defaults -->
   <default>
+    <default class="visual">
+      <geom contype="0" conaffinity="0" density="0" group="2"/>
+    </default>
+
     <default class="wheel">
-      <joint axis="0 0 1" limited="false" damping="0.1"/>
-      <geom type = "mesh" mesh="wheel" material="dark"/>
-      <velocity ctrlrange="-10 10"/>
+      <joint axis="0 0 1" limited="false" damping="0.2" frictionloss="0.05" armature="0.01"/>
+      <velocity ctrllimited="true" ctrlrange="-10 10" kv="0.5"/>
     </default>
   </default>
 
   <!-- World -->
   <worldbody>
-    <body name="base" pos="0 0 0">
+    <light name="sun" pos="0 0 4" dir="0 0 -1" directional="true" diffuse="0.95 0.95 0.95" specular="0.25 0.25 0.25" ambient="0.35 0.35 0.35"/>
+    <light name="fill" pos="2 -2 2.5" diffuse="0.6 0.6 0.6" specular="0.1 0.1 0.1"/>
+    <geom name="floor" type="plane" size="5 5 0.1" pos="0 0 0" material="ground" friction="1.0 0.05 0.05"/>
+    <geom name="x_axis_ref" type="box" pos="0.75 0 0.01" size="0.75 0.015 0.01" material="axis_x" contype="0" conaffinity="0"/>
+    <geom name="y_axis_ref" type="box" pos="0 0.75 0.01" size="0.015 0.75 0.01" material="axis_y" contype="0" conaffinity="0"/>
+    <geom name="origin_ref" type="cylinder" pos="0 0 0.01" size="0.06 0.01" material="red" contype="0" conaffinity="0"/>
+
+    <body name="base" pos="0 0 0.06">
+      <inertial pos="0 0 0.06" mass="3.0" diaginertia="0.04 0.04 0.04"/>
       
       <!-- Free base -->
       <joint type="free"/>
 
       <!-- Base -->
-      <geom type = "mesh" mesh="base" material="dark"/>
-      <geom type = "mesh" mesh="cam_bridge" material="dark"/>
+      <geom type="mesh" mesh="base" material="dark" class="visual"/>
+      <geom type="box" pos="0 0 0.055" size="0.16 0.13 0.03" friction="1.0 0.05 0.05"/>
+
+      <!-- Camera bridge:
+           body pos = where the bridge mounts on the robot
+           geom pos  = correction for the STL's internal origin -->
+      <body name="cam_bridge_mount" pos="0.1098 0.003 0.1" euler="0 0 1.57 ">
+        <geom name="cam_bridge_geom" pos="0 0.017 0" type="mesh" mesh="cam_bridge" material="dark" class="visual"/>
+      </body>
       
       <!-- Wheels -->
       <body name="wheel_fl" pos="0.064 0.1522 0.02345" quat="0.707 0.707 0 0">
+        <inertial pos="0 0 0" mass="0.15" diaginertia="0.0002 0.0002 0.0002"/>
         <joint name="wheel_fl_joint" class="wheel"/>
-        <geom type = "mesh" mesh="wheel" material="light_blue"/>
+        <geom type="mesh" mesh="wheel_visual" material="light_blue" class="visual"/>
+        <geom type="cylinder" size="0.034 0.018" friction="1.2 0.05 0.05" rgba="0 0 0 0"/>
       </body>
 
       <body name="wheel_bl" pos="-0.064 0.1522 0.02345" quat="0.707 0.707 0 0">
+        <inertial pos="0 0 0" mass="0.15" diaginertia="0.0002 0.0002 0.0002"/>
         <joint name="wheel_bl_joint" class="wheel"/>
-        <geom type = "mesh" mesh="wheel" material="light_blue"/>
+        <geom type="mesh" mesh="wheel_visual" material="light_blue" class="visual"/>
+        <geom type="cylinder" size="0.034 0.018" friction="1.2 0.05 0.05" rgba="0 0 0 0"/>
       </body>
 
       <body name="wheel_fr" pos="0.064 -0.1522 0.02345" quat="0.707 -0.707 0 0">
+        <inertial pos="0 0 0" mass="0.15" diaginertia="0.0002 0.0002 0.0002"/>
         <joint name="wheel_fr_joint" class="wheel"/>
-        <geom type = "mesh" mesh="wheel" material="light_blue"/>
+        <geom type="mesh" mesh="wheel_visual" material="light_blue" class="visual"/>
+        <geom type="cylinder" size="0.034 0.018" friction="1.2 0.05 0.05" rgba="0 0 0 0"/>
       </body>
 
       <body name="wheel_br" pos="-0.064 -0.1522 0.02345" quat="0.707 -0.707 0 0">
+        <inertial pos="0 0 0" mass="0.15" diaginertia="0.0002 0.0002 0.0002"/>
         <joint name="wheel_br_joint" class="wheel"/>
-        <geom type = "mesh" mesh="wheel" material="light_blue"/>
+        <geom type="mesh" mesh="wheel_visual" material="light_blue" class="visual"/>
+        <geom type="cylinder" size="0.034 0.018" friction="1.2 0.05 0.05" rgba="0 0 0 0"/>
       </body>
 
       <!-- Grabbers -->
       <body name="grabber_right" pos="0.174 -0.070 0.024">
-        <joint name="grabber_right_joint" range="-1.57 1.57"/>
-        <geom type = "mesh" mesh="arm_right" material="green"/>
+        <inertial pos="0 0 0" mass="0.05" diaginertia="0.0001 0.0001 0.0001"/>
+        <joint name="grabber_right_joint" range="-1.57 1.57" limited="true" damping="0.2"/>
+        <geom type="mesh" mesh="arm_right" material="green" class="visual"/>
       </body>
 
       <body name="grabber_left" pos="0.174 0.070 0.024">
-        <joint name="grabber_left_joint" range="-1.57 1.57"/>
-        <geom type = "mesh" mesh="arm_left" material="green"/>
+        <inertial pos="0 0 0" mass="0.05" diaginertia="0.0001 0.0001 0.0001"/>
+        <joint name="grabber_left_joint" range="-1.57 1.57" limited="true" damping="0.2"/>
+        <geom type="mesh" mesh="arm_left" material="green" class="visual"/>
       </body>
 
       <!-- Head -->
       <body name="head" pos="0.1063 0 0.1679" quat="0.707 0.707 0 0">
-        <joint name="head_joint" range="-1.57 1.57"/>
-        <geom type = "mesh" mesh="head" material="orange"/>
+        <inertial pos="0 0 0" mass="0.08" diaginertia="0.0002 0.0002 0.0002"/>
+        <joint name="head_joint" range="-1.57 1.57" limited="true" damping="0.2"/>
+        <geom type="mesh" mesh="head" material="orange" class="visual"/>
 
         <!-- Camera -->
         <body name="camera" pos="0.022 0.038 0">
-          <geom type="box" size="0.0075 0.015 0.0135" material="red"/>
+          <geom type="box" size="0.0075 0.015 0.0135" material="red" class="visual"/>
         </body>
       </body>
 
       <!-- Lidar -->
       <body name="lidar" pos="0 0 0.122">
-        <geom mesh="lds" material="dark"/>
+        <geom mesh="lds" material="dark" class="visual"/>
       </body>
 
     </body>
