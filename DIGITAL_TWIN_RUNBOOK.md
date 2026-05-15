@@ -7,7 +7,7 @@ This is the current command and interpretation guide for the ROS 2 Humble + MuJo
 Use this workspace root in the examples below:
 
 ```bash
-WORKSPACE=/home/rehawild/Desktop/mecanumbot
+WORKSPACE=/path/to/mecanumbot
 cd "$WORKSPACE"
 ```
 
@@ -20,14 +20,14 @@ This is the short command lineup for the normal digital-twin UX path: MuJoCo tru
 Terminal 1:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_truth_twin.sh use_rviz:=true
 ```
 
 Terminal 2:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_sim_teleop.sh
 ```
 
@@ -41,7 +41,7 @@ Keyboard controls:
 If the install tree is stale or missing, rebuild first:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/rebuild_sim.sh
 ```
 
@@ -52,23 +52,23 @@ Use this longer path only when testing the real perception/debug stack. The shor
 Terminal 1, launch the sim/perception stack with RViz:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_sim_perception.sh \
   use_rviz:=true \
-  scenario_path:=/home/rehawild/Desktop/mecanumbot/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml
+  scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml"
 ```
 
 Terminal 2, teleoperate the robot:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_sim_teleop.sh
 ```
 
 Terminal 3, source the perception runtime before running debug commands:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 source ./mecanumbot_RL/scripts/sim_env.sh
 source_perception_runtime
 ```
@@ -92,7 +92,7 @@ ros2 param set /rviz2 use_sim_time true
 Optional Terminal 4, record the run for later replay:
 
 ```bash
-cd /home/rehawild/Desktop/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/record_sim_perception_bag.sh two_humans_wall_discrimination
 ```
 

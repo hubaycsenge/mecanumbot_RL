@@ -955,12 +955,13 @@ code {
     <div class="two-col">
       <div class="terminal">
         <div class="label">Terminal 1 - truth twin and RViz</div>
-<pre><code>cd /home/rehawild/Desktop/mecanumbot
+<pre><code>WORKSPACE=/path/to/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_truth_twin.sh use_rviz:=true</code></pre>
       </div>
       <div class="terminal">
         <div class="label">Terminal 2 - keyboard teleop</div>
-<pre><code>cd /home/rehawild/Desktop/mecanumbot
+<pre><code>cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_sim_teleop.sh</code></pre>
       </div>
     </div>
@@ -1097,7 +1098,8 @@ code {
     <div class="two-col">
       <div class="terminal">
         <div class="label">Run actual BT in truth twin</div>
-<pre><code>cd /home/rehawild/Desktop/mecanumbot
+<pre><code>WORKSPACE=/path/to/mecanumbot
+cd "$WORKSPACE"
 ./mecanumbot_RL/scripts/run_sim_behaviour.sh use_rviz:=true</code></pre>
       </div>
       <div class="status-list">
@@ -1262,7 +1264,7 @@ code {
         <div class="terminal" style="margin-top:16px">
           <div class="label">Replay</div>
 <pre><code>ros2 bag play \
-  /home/rehawild/Desktop/mecanumbot/mecanumbot_RL/perception_runs/20260423_115358_two_humans_wall_discrimination \
+  "$WORKSPACE/mecanumbot_RL/perception_runs/20260423_115358_two_humans_wall_discrimination" \
   --clock</code></pre>
         </div>
       </div>
@@ -1331,7 +1333,7 @@ code {
         <div class="terminal">
           <div class="label">Debug frontier</div>
 <pre><code>./mecanumbot_RL/scripts/run_detector_debug.sh \
-  scenario_path:=/home/rehawild/Desktop/mecanumbot/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml</code></pre>
+  scenario_path:="$WORKSPACE/install/mecanumbot_bringup/share/mecanumbot_bringup/config/sim_scenarios/two_humans_wall_discrimination.yaml"</code></pre>
         </div>
       </div>
     </div>
